@@ -1,4 +1,4 @@
-class Video {
+class Endpoint {
     constructor(id, size, requests) {
         this.id = id;
         this.size = size;
@@ -11,4 +11,4 @@ class Video {
     }
 }
 
-module.exports = Video;
+module.exports = Endpoint;
