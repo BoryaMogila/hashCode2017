@@ -20,7 +20,7 @@ const trimEndpoints = require('./helpers/trimEndpoints');
             dcLatency: array[0].split(' ')[0],
             connections: Number(array[0].split(' ')[1]),
             cashes: {},
-            videos: {1:3}
+            videos: {}
         };
         array.splice(0, 1);
         let endpointArray = array.splice(0, endpoints[i].connections);
@@ -29,9 +29,8 @@ const trimEndpoints = require('./helpers/trimEndpoints');
             endpoints[i].cashes[cache[0]] = cache[1];
         });
     }
-     console.log(array[0]);
-    (endpoints.length);
-
-    //console.log(endpoint);
-    //await fs.writeFileSync('./data.out', array.join('\n'))
+    array.forEach((string) => {
+        let video = string.split( );
+        endpoints[1].videos[video[0]] = video[2];
+    });
 })();
