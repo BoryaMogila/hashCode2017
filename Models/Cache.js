@@ -1,5 +1,5 @@
 class Cache {
-    constructor (id, size, latency) {
+    constructor(id, size, latency) {
         this.id = id;
         this.size = size;
         this.sizeFree = size;
@@ -9,7 +9,7 @@ class Cache {
 
     saveVideo(video) {
         let sizeWillBe = this.sizeFree - video.size;
-        if(sizeWillBe < 0) {
+        if (sizeWillBe < 0) {
             return false
         } else {
             this.videos[video.id] = video;
@@ -18,8 +18,8 @@ class Cache {
         }
     }
 
-    toString () {
-        let string = `${this.volume} ${this.latency} ${this.size} ${this.sizeFree}\n`;
+    toString() {
+        let string = `${this.id} ${this.latency} ${this.size} ${this.sizeFree}\n`;
         for (let i in videos) {
             string += `${videos[i]} `;
         }
@@ -27,7 +27,7 @@ class Cache {
         return string;
     }
 
-    toSave () {
+    toSave() {
         let string = `${this.id}\n`;
         let videos = this.videos;
         for (let i in videos) {
