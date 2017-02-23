@@ -12,6 +12,7 @@ const fs = require('fs');
     config.size = configArray[4];
     const videoSizes = array[1].split(' ');
     let endpoints = [];
+    array.splice(0, 2);
     for(let i = 0; i < config.endpoints; i++){
         endpoints[i] = {
             dcLatency: array[0].split(' ')[0],
@@ -20,16 +21,14 @@ const fs = require('fs');
             videos: {1:3}
         };
         array.splice(0, 1);
-        console.log(array[0]);
         let endpointArray = array.splice(0, endpoints[i].connections);
-        console.log(endpointArray.length);
         endpointArray.forEach((string) => {
             let cache = string.split(' ');
             endpoints[i].cashes[cache[0]] = cache[1];
         });
     }
      console.log(array[0]);
-    // console.log(endpoints.length);
+    (endpoints.length);
 
     //console.log(endpoint);
     //await fs.writeFileSync('./data.out', array.join('\n'))
