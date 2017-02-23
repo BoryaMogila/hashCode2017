@@ -8,13 +8,17 @@ class Cache {
     }
 
     saveVideo(video) {
-        let sizeWillBe = this.sizeFree - video.size;
-        if (sizeWillBe < 0) {
-            return false
-        } else {
-            this.videos[video.id] = video;
-            this.sizeFree = sizeWillBe;
+        if (this.videos[video.id]) {
             return true
+        } else {
+            let sizeWillBe = this.sizeFree - video.size;
+            if (sizeWillBe < 0) {
+                return false
+            } else {
+                this.videos[video.id] = video;
+                this.sizeFree = sizeWillBe;
+                return true
+            }
         }
     }
 
