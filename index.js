@@ -29,35 +29,13 @@ const trimEndpoints = require('./helpers/trimEndpoints');
             endpoints[i].cashes[cache[0]] = cache[1];
         });
     }
-
-
-    array.forEach((string) => {
-        let video = string.split( );
-        endpoints[1].videos[video[0]] = video[2];
+    array.forEach((string, index) => {
+        if(array.length - 1  == index) return;
+        let video = string.split(' ');
+        endpoints[video[1]].videos[video[0]] = video[2];
     });
-    
-    
-    
-     console.log(array[0]);
-    (endpoints.length);
+    await fs.writeFileSync('./data.out', JSON.stringify(endpoints, null, '\t'));
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-    
     let cache = [];
     cache[0] = [2];
     cache[1] = [18,3,4];
