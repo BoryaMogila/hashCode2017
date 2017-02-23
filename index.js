@@ -1,4 +1,6 @@
 const fs = require('fs');
+const trimEndpoints = require('./helpers/trimEndpoints');
+
 (async function dfd() {
     let text = await fs.readFileSync('./input/kittens.in', 'utf8');
     let array = text.split('\n');
