@@ -32,6 +32,38 @@ const trimEndpoints = require('./helpers/trimEndpoints');
      console.log(array[0]);
     (endpoints.length);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    let cache = [];
+    cache[0] = [2];
+    cache[1] = [18,3,4];
+    cache[2] = [6,2,3];
+
+    /* output:
+
+     //servers count
+     // server_id - videos
+
+    * 3
+    * 0 2
+    * 1 18 3 4
+    * 2 6 23
+    * */
+
+
     //console.log(endpoint);
     //await fs.writeFileSync('./data.out', array.join('\n'))
 })();
