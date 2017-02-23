@@ -11,26 +11,26 @@ const fs = require('fs');
     config.caches = configArray[3];
     config.size = configArray[4];
     const videoSizes = array[1].split(' ');
-    let endpoint = {
-        dcLatency: array[2].split(' ')[0],
-        connections: Number(array[2].split(' ')[1]),
-        cashes: {}
-    };
-    array.splice(0, 3);
-    let endpointArray = array.slice(0, endpoint.connections);
-    console.log(endpointArray[0]);
-    endpointArray.forEach((string) => {
-        let cache = string.split(' ');
-        endpoint.cashes[cache[0]] = cache[1];
-    });
     let endpoints = [];
-    for(let i = 0; i <= config.endpoints; i++){
+    for(let i = 0; i < config.endpoints; i++){
         endpoints[i] = {
-            dcLatency: array[2].split(' ')[0],
-            connections: Number(array[2].split(' ')[1]),
-            cashes: {}
-        }
+            dcLatency: array[0].split(' ')[0],
+            connections: Number(array[0].split(' ')[1]),
+            cashes: {},
+            videos: {1:3}
+        };
+        array.splice(0, 1);
+        console.log(array[0]);
+        let endpointArray = array.splice(0, endpoints[i].connections);
+        console.log(endpointArray.length);
+        endpointArray.forEach((string) => {
+            let cache = string.split(' ');
+            endpoints[i].cashes[cache[0]] = cache[1];
+        });
     }
+     console.log(array[0]);
+    // console.log(endpoints.length);
+
     //console.log(endpoint);
     //await fs.writeFileSync('./data.out', array.join('\n'))
 })();
