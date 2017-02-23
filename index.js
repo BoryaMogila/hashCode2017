@@ -12,6 +12,10 @@ const trimEndpoints = require('./helpers/trimEndpoints');
     config.descriptions = configArray[2];
     config.caches = configArray[3];
     config.size = configArray[4];
+    let caches = [];
+    for(let i = 0; i < config.caches; i++){
+        caches.push({limit: config.size, videos: []})
+    }
     const videoSizes = array[1].split(' ');
     let endpoints = [];
     array.splice(0, 2);
@@ -19,26 +23,36 @@ const trimEndpoints = require('./helpers/trimEndpoints');
         endpoints[i] = {
             dcLatency: array[0].split(' ')[0],
             connections: Number(array[0].split(' ')[1]),
-            cashes: {},
+            requests: 0,
+            caches: {},
             videos: {}
         };
         array.splice(0, 1);
         let endpointArray = array.splice(0, endpoints[i].connections);
         endpointArray.forEach((string) => {
             let cache = string.split(' ');
-            endpoints[i].cashes[cache[0]] = cache[1];
+            endpoints[i].caches[cache[0]] = cache[1];
         });
     }
     array.forEach((string, index) => {
         if(array.length - 1  == index) return;
         let video = string.split(' ');
         let endpointId = video[1];
+        endpoints[endpointId].requests += Number(video[2]);
         endpoints[endpointId].videos[video[0]] = {};
         endpoints[endpointId].videos[video[0]].economy = {};
-        let cachesIds = Object.keys(endpoints[endpointId].cashes);
+        let cachesIds = Object.keys(endpoints[endpointId].caches);
         cachesIds.forEach((cacheId) => {
-            endpoints[endpointId].videos[video[0]].economy[cacheId] = (endpoints[endpointId].dcLatency - endpoints[endpointId].cashes[cacheId]) * video[2];
+            endpoints[endpointId].videos[video[0]].economy[cacheId] = (endpoints[endpointId].dcLatency - endpoints[endpointId].caches[cacheId]) * video[2];
         });
+    });
+    endpoints.sort((a,b) => {
+        return a.requests - b.requests;
+    });
+    endpoints.forEach((endpoint) => {
+        endpoint.videos.sort((a, b) => {
+
+        })
     });
     await fs.writeFileSync('./data.out', JSON.stringify(endpoints, null, '\t'));
 
