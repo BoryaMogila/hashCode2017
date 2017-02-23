@@ -1,1 +1,4 @@
-"new fckin test!!"
+
+(async function dfd() {
+    console.log('test');
+})();
