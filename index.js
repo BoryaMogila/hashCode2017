@@ -2,7 +2,7 @@ const fs = require('fs');
 const trimEndpoints = require('./helpers/trimEndpoints');
 
 (async function dfd() {
-    let text = await fs.readFileSync('./input/kittens.in', 'utf8');
+    let text = await fs.readFileSync('./input/me_at_the_zoo.in', 'utf8');
     let array = text.split('\n');
     let input = array[0];
     let config = {};
@@ -32,7 +32,13 @@ const trimEndpoints = require('./helpers/trimEndpoints');
     array.forEach((string, index) => {
         if(array.length - 1  == index) return;
         let video = string.split(' ');
-        endpoints[video[1]].videos[video[0]] = video[2];
+        let endpointId = video[1];
+        endpoints[endpointId].videos[video[0]] = {};
+        endpoints[endpointId].videos[video[0]].economy = {};
+        let cachesIds = Object.keys(endpoints[endpointId].cashes);
+        cachesIds.forEach((cacheId) => {
+            endpoints[endpointId].videos[video[0]].economy[cacheId] = (endpoints[endpointId].dcLatency - endpoints[endpointId].cashes[cacheId]) * video[2];
+        });
     });
     await fs.writeFileSync('./data.out', JSON.stringify(endpoints, null, '\t'));
 
