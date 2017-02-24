@@ -3,7 +3,7 @@ const trimEndpoints = require('./helpers/trimEndpoints');
 
 (async function optimaseTraffic() {
     console.time('optimase');
-    let text = await fs.readFileSync('./input/trending_today.in', 'utf8');
+    let text = await fs.readFileSync('./input/kittens.in', 'utf8');
     let array = text.split('\n');
     let input = array[0];
     let config = {};
@@ -77,35 +77,59 @@ const trimEndpoints = require('./helpers/trimEndpoints');
     let minSize = Math.min(...videoSizes);
     console.log('sort', videosFromRelations.length);
     do{
-        let relationsArray = Object.values(relations);
-        console.log(relationsArray.length);
-        relationsArray.sort((a, b) => b.economy - a.economy);
-        console.log('time');
-        let checkedVideos = [];
-        videosFromRelations.forEach(videoId => {
-            let videoRelations = relationsArray.filter(relation => relation.videoId == videoId);
-            //console.log('ffff');
-            if(videoRelations.length){
-                let {cacheId, videoId} = videoRelations[0];
-                let size = Number(videoSizes[videoId]);
-                if(caches[cacheId].limit > 0 && (caches[cacheId].limit - size) > 0 && !caches[cacheId].videos.includes(videoId)){
-                    caches[cacheId].videos.push(videoId);
-                    caches[cacheId].limit = caches[cacheId].limit - size;
-                    checkedVideos.push(delete relations[`${videoId}${cacheId}`]);
+        let checkedVideos = [],
+            iterationCities = [];
+        for(let relation of relationsArray){
+            let {cacheId, videoId} = relation;
+            let size = Number(videoSizes[videoId]);
+            if(caches[cacheId].limit > 0 && (caches[cacheId].limit - size) > 0 && !caches[cacheId].videos.includes(videoId) && !iterationCities.includes(videoId)){
+                caches[cacheId].videos.push(videoId);
+                caches[cacheId].limit = caches[cacheId].limit - size;
+                checkedVideos.push(delete relations[`${videoId}${cacheId}`]);
+                iterationCities.push(videoId);
+            }
+
+            let maxLimit = 0;
+            connectedCaches.forEach((cacheId) => {
+                if(caches[cacheId].limit > maxLimit){
+                    maxLimit = caches[cacheId].limit;
                 }
+            });
+            if(!checkedVideos.length || !relationsArray.length || (minSize > maxLimit)){
+                hasPlace = false;
             }
-        });
-        console.log('ok');
-        let maxLimit = 0;
-        connectedCaches.forEach((cacheId) => {
-            if(caches[cacheId].limit > maxLimit){
-                maxLimit = caches[cacheId].limit;
-            }
-        });console.log(checkedVideos.length);
-        if(!checkedVideos.length || !relationsArray.length || (minSize > maxLimit)){
-            hasPlace = false;
         }
     }while (hasPlace);
+    // do{
+    //     let relationsArray = Object.values(relations);
+    //     console.log(relationsArray.length);
+    //     relationsArray.sort((a, b) => b.economy - a.economy);
+    //     console.log('time');
+    //     let checkedVideos = [];
+    //     videosFromRelations.forEach(videoId => {
+    //         let videoRelations = relationsArray.filter(relation => relation.videoId == videoId);
+    //         //console.log('ffff');
+    //         if(videoRelations.length){
+    //             let {cacheId, videoId} = videoRelations[0];
+    //             let size = Number(videoSizes[videoId]);
+    //             if(caches[cacheId].limit > 0 && (caches[cacheId].limit - size) > 0 && !caches[cacheId].videos.includes(videoId)){
+    //                 caches[cacheId].videos.push(videoId);
+    //                 caches[cacheId].limit = caches[cacheId].limit - size;
+    //                 checkedVideos.push(delete relations[`${videoId}${cacheId}`]);
+    //             }
+    //         }
+    //     });
+    //     console.log('ok');
+    //     let maxLimit = 0;
+    //     connectedCaches.forEach((cacheId) => {
+    //         if(caches[cacheId].limit > maxLimit){
+    //             maxLimit = caches[cacheId].limit;
+    //         }
+    //     });console.log(checkedVideos.length);
+    //     if(!checkedVideos.length || !relationsArray.length || (minSize > maxLimit)){
+    //         hasPlace = false;
+    //     }
+    // }while (hasPlace);
 
     function saveData(cache) {
         let string = cache.length + '\n';
@@ -121,6 +145,6 @@ const trimEndpoints = require('./helpers/trimEndpoints');
     var resStr = saveData(caches);
     console.log(resStr);
 
-    await fs.writeFileSync('./trending_today.out', resStr, 'utf8');
+    await fs.writeFileSync('./kittens2.out', resStr, 'utf8');
     console.timeEnd('optimase');
 })();
