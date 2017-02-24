@@ -25,7 +25,7 @@ const trimEndpoints = require('./helpers/trimEndpoints');
             connections: Number(array[0].split(' ')[1]),
             requests: 0,
             caches: {},
-            videos: {}
+            videos: []
         };
         array.splice(0, 1);
         let endpointArray = array.splice(0, endpoints[i].connections);
@@ -39,40 +39,77 @@ const trimEndpoints = require('./helpers/trimEndpoints');
         let video = string.split(' ');
         let endpointId = video[1];
         endpoints[endpointId].requests += Number(video[2]);
-        endpoints[endpointId].videos[video[0]] = {};
-        endpoints[endpointId].videos[video[0]].economy = {};
+        let videoObj = {id: video[0], economy: []};
         let cachesIds = Object.keys(endpoints[endpointId].caches);
         cachesIds.forEach((cacheId) => {
-            endpoints[endpointId].videos[video[0]].economy[cacheId] = (endpoints[endpointId].dcLatency - endpoints[endpointId].caches[cacheId]) * video[2];
+            let cache = {
+                id: cacheId,
+                ms: (endpoints[endpointId].dcLatency - endpoints[endpointId].caches[cacheId]) * video[2]
+            };
+            videoObj.economy.push(cache);
+
+
         });
+        endpoints[endpointId].videos.push(videoObj)
     });
     endpoints.sort((a,b) => {
         return a.requests - b.requests;
     });
     endpoints.forEach((endpoint) => {
+        endpoint.videos.forEach((video) => {
+            video.economy.sort((a,b) => {
+                return b.ms - a.ms;
+            })
+        });
         endpoint.videos.sort((a, b) => {
+            return (b.economy[0] || {}).ms - (a.economy[0] || {}).ms;
 
         })
     });
+    let hasPlace = true;
+    let index = 0;
+    let videoIndex = 0;
+    let minSize = Math.min(...videoSizes);
+    do{
+        endpoints.forEach((endpoint) => {
+            if(!endpoint.videos[index]) return;
+            // console.log((endpoint.videos[index] || {}).economy[0]);
+            // if()
+            let cacheId = ((endpoint.videos[index] || {}).economy[0] || {}).id;
+            let videoId = (endpoint.videos[index] || {}).id;
+            if(caches[cacheId].limit && caches[cacheId].limit - videoSizes[videoId] && !caches[cacheId].videos.includes(videoId)){
+                caches[cacheId].videos.push(videoId);
+                caches[cacheId].limit = caches[cacheId].limit - videoSizes[videoId];
+            }
+            let maxLimit = 0;
+            caches.forEach((cache) => {
+                if(cache.limit > maxLimit){
+                    maxLimit = cache.limit;
+                }
+            });
+            console.log(minSize,  maxLimit);
+            if(minSize > maxLimit){
+                hasPlace = false;
+            }
+             index++;
+        })
+    } while (hasPlace);
+    console.log('end');
     await fs.writeFileSync('./data.out', JSON.stringify(endpoints, null, '\t'));
 
-    let cache = [];
-    cache[0] = [2];
-    cache[1] = [18,3,4];
-    cache[2] = [6,2,3];
+    function saveData(cache) {
+        let string = cache.length + '\n';
 
-    /* output:
+        for (let i in cache) {
+            if(cache[i] && cache[i].videos){
+                string += i + " " + cache[i].videos.join(" ") + '\n';
+            }
+        }
+        return string;
+    }
 
-     //servers count
-     // server_id - videos
+    var resStr = saveData(caches);
+    console.log(resStr);
 
-    * 3
-    * 0 2
-    * 1 18 3 4
-    * 2 6 23
-    * */
-
-
-    //console.log(endpoint);
-    //await fs.writeFileSync('./data.out', array.join('\n'))
+    await fs.writeFileSync('./me_at_the_zoo.out', resStr, 'utf8');
 })();
