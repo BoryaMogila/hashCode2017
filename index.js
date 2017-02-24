@@ -1,8 +1,9 @@
 const fs = require('fs');
 const trimEndpoints = require('./helpers/trimEndpoints');
 
-(async function dfd() {
-    let text = await fs.readFileSync('./input/me_at_the_zoo.in', 'utf8');
+(async function optimaseTraffic() {
+    console.time('optimase');
+    let text = await fs.readFileSync('./input/trending_today.in', 'utf8');
     let array = text.split('\n');
     let input = array[0];
     let config = {};
@@ -14,8 +15,9 @@ const trimEndpoints = require('./helpers/trimEndpoints');
     config.size = configArray[4];
     let caches = [];
     for(let i = 0; i < config.caches; i++){
-        caches.push({limit: config.size, videos: []})
+        caches.push({limit: Number(config.size), videos: []})
     }
+    //console.log(caches);return
     const videoSizes = array[1].split(' ');
     let endpoints = [];
     array.splice(0, 2);
@@ -34,68 +36,76 @@ const trimEndpoints = require('./helpers/trimEndpoints');
             endpoints[i].caches[cache[0]] = cache[1];
         });
     }
+    let relations = {};
+    let connectedCaches = [];
     array.forEach((string, index) => {
         if(array.length - 1  == index) return;
         let video = string.split(' ');
         let endpointId = video[1];
-        endpoints[endpointId].requests += Number(video[2]);
-        let videoObj = {id: video[0], economy: []};
+        //endpoints[endpointId].requests += Number(video[2]);
+        //let videoObj = {id: video[0], economy: []};
         let cachesIds = Object.keys(endpoints[endpointId].caches);
         cachesIds.forEach((cacheId) => {
-            let cache = {
-                id: cacheId,
-                ms: (endpoints[endpointId].dcLatency - endpoints[endpointId].caches[cacheId]) * video[2]
-            };
-            videoObj.economy.push(cache);
+            let economy = (endpoints[endpointId].dcLatency - endpoints[endpointId].caches[cacheId]) * video[2];
+            if(economy){
+                let relationId = `${video[0]}${cacheId}`;
+                if(!relations[relationId]){
+                    relations[relationId] = {videoId: video[0], cacheId, economy};
+                    if(!connectedCaches.includes(cacheId)) connectedCaches.push(cacheId);
+                } else {
+                    relations[relationId].economy += economy;
+                }
+            }
+            // let cache = {
+            //     id: cacheId,
+            //     ms: (endpoints[endpointId].dcLatency - endpoints[endpointId].caches[cacheId]) * video[2]
+            // };
+            // videoObj.economy.push(cache);
 
 
         });
-        endpoints[endpointId].videos.push(videoObj)
+        //endpoints[endpointId].videos.push(videoObj)
     });
-    endpoints.sort((a,b) => {
-        return a.requests - b.requests;
-    });
-    endpoints.forEach((endpoint) => {
-        endpoint.videos.forEach((video) => {
-            video.economy.sort((a,b) => {
-                return b.ms - a.ms;
-            })
-        });
-        endpoint.videos.sort((a, b) => {
-            return (b.economy[0] || {}).ms - (a.economy[0] || {}).ms;
+    let relationsArray = Object.values(relations);
+    relationsArray.sort((a, b) => b.economy - a.economy);
 
-        })
+    let videosFromRelations = [];
+    relationsArray.forEach((relation) => {
+        if(!videosFromRelations.includes(relation.videoId)) videosFromRelations.push(relation.videoId);
     });
     let hasPlace = true;
-    let index = 0;
-    let videoIndex = 0;
     let minSize = Math.min(...videoSizes);
+    console.log('sort', videosFromRelations.length);
     do{
-        endpoints.forEach((endpoint) => {
-            if(!endpoint.videos[index]) return;
-            // console.log((endpoint.videos[index] || {}).economy[0]);
-            // if()
-            let cacheId = ((endpoint.videos[index] || {}).economy[0] || {}).id;
-            let videoId = (endpoint.videos[index] || {}).id;
-            if(caches[cacheId].limit && caches[cacheId].limit - videoSizes[videoId] && !caches[cacheId].videos.includes(videoId)){
-                caches[cacheId].videos.push(videoId);
-                caches[cacheId].limit = caches[cacheId].limit - videoSizes[videoId];
-            }
-            let maxLimit = 0;
-            caches.forEach((cache) => {
-                if(cache.limit > maxLimit){
-                    maxLimit = cache.limit;
+        let relationsArray = Object.values(relations);
+        console.log(relationsArray.length);
+        relationsArray.sort((a, b) => b.economy - a.economy);
+        console.log('time');
+        let checkedVideos = [];
+        videosFromRelations.forEach(videoId => {
+            let videoRelations = relationsArray.filter(relation => relation.videoId == videoId);
+            //console.log('ffff');
+            if(videoRelations.length){
+                let {cacheId, videoId} = videoRelations[0];
+                let size = Number(videoSizes[videoId]);
+                if(caches[cacheId].limit > 0 && (caches[cacheId].limit - size) > 0 && !caches[cacheId].videos.includes(videoId)){
+                    caches[cacheId].videos.push(videoId);
+                    caches[cacheId].limit = caches[cacheId].limit - size;
+                    checkedVideos.push(delete relations[`${videoId}${cacheId}`]);
                 }
-            });
-            console.log(minSize,  maxLimit);
-            if(minSize > maxLimit){
-                hasPlace = false;
             }
-             index++;
-        })
-    } while (hasPlace);
-    console.log('end');
-    await fs.writeFileSync('./data.out', JSON.stringify(endpoints, null, '\t'));
+        });
+        console.log('ok');
+        let maxLimit = 0;
+        connectedCaches.forEach((cacheId) => {
+            if(caches[cacheId].limit > maxLimit){
+                maxLimit = caches[cacheId].limit;
+            }
+        });console.log(checkedVideos.length);
+        if(!checkedVideos.length || !relationsArray.length || (minSize > maxLimit)){
+            hasPlace = false;
+        }
+    }while (hasPlace);
 
     function saveData(cache) {
         let string = cache.length + '\n';
@@ -111,5 +121,6 @@ const trimEndpoints = require('./helpers/trimEndpoints');
     var resStr = saveData(caches);
     console.log(resStr);
 
-    await fs.writeFileSync('./me_at_the_zoo.out', resStr, 'utf8');
+    await fs.writeFileSync('./trending_today.out', resStr, 'utf8');
+    console.timeEnd('optimase');
 })();
