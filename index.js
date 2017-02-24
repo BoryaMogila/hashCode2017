@@ -49,30 +49,87 @@ const trimEndpoints = require('./helpers/trimEndpoints');
     endpoints.sort((a,b) => {
         return a.requests - b.requests;
     });
-    endpoints.forEach((endpoint) => {
-        endpoint.videos.sort((a, b) => {
-
-        })
-    });
+   
     await fs.writeFileSync('./data.out', JSON.stringify(endpoints, null, '\t'));
 
+
+
+
+
+    
     let cache = [];
-    cache[0] = [2];
-    cache[1] = [18,3,4];
-    cache[2] = [6,2,3];
-
-    /* output:
-
-     //servers count
-     // server_id - videos
-
-    * 3
-    * 0 2
-    * 1 18 3 4
-    * 2 6 23
-    * */
+    cache[0] = {videos: [2]};
+    cache[1] = {videos: [18,3,4]};
+    cache[2] = {videos: [6,2,3]};
 
 
-    //console.log(endpoint);
-    //await fs.writeFileSync('./data.out', array.join('\n'))
+   
+
+    function saveData(cache) {
+        let string = cache.length + '\n';
+
+        for (let i in cache) {
+            if(cache[i] && cache[i].videos){
+                string += i + " " + cache[i].videos.join(" ") + '\n';
+            }
+        }
+        return string;
+    }
+    
+    var resStr = saveData(cache);
+    console.log(resStr);
+
+    await fs.writeFileSync('.results_kittens.out', resStr, 'utf8');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /* random */
+    function randomizeValues(cache_count, videos_count, server_size, devider) {
+        var cache = [];
+        var max_videos_per_cache = Math.floor(server_size / devider);
+        for(var c =0; c < cache_count; c++){
+
+            var videos = [];
+            for (var v =0; v < max_videos_per_cache; v++){
+                var video_id = Math.floor(Math.random() * videos_count);
+                if(videos.indexOf(video_id) == -1){
+                    videos.push(video_id);
+                }
+            }
+            cache[c] = {videos};
+        }
+        return cache;
+    }
+
+    var iter = 0;
+    await fs.writeFileSync('./out/' + iter +'/kitten.out', saveData(randomizeValues(500, 10000, 6000, 800)), 'utf8');
+    await fs.writeFileSync('./out/' + iter +'/zoo.out', saveData(randomizeValues(10, 100, 100, 50)), 'utf8');
+    await fs.writeFileSync('./out/' + iter +'/trend.out', saveData(randomizeValues(100, 10000, 50000, 900)), 'utf8');
+    await fs.writeFileSync('./out/' + iter +'/videos.out', saveData(randomizeValues(100, 10000, 10000, 700)), 'utf8');
+
 })();
