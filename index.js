@@ -25,7 +25,7 @@ const trimEndpoints = require('./helpers/trimEndpoints');
             connections: Number(array[0].split(' ')[1]),
             requests: 0,
             caches: {},
-            videos: []
+            videos: {}
         };
         array.splice(0, 1);
         let endpointArray = array.splice(0, endpoints[i].connections);
